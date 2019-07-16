@@ -20,6 +20,9 @@
       padding: 20px;
       align-items: center;
     }
+    .card-body {
+      padding: 20px;
+    }
     </style>
     <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
     <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
@@ -54,6 +57,7 @@
   </body>
   <footer>
   <script>
+    
   // Queries OMDB Movies API and parses out response results.
   function searchMovies() {
     var text = document.getElementById("search-field").value;
@@ -82,15 +86,80 @@
     return false;
   };
 
-  // Creates cards to display movie information.
+  // Displays cards with movie summary information.
+  function createCard(movie) {
+    const {title, year, imdbID, poster} = movie;
+    const card = '<div class="card" style="width: 22rem;" id="movie-' + imdbID + '">' + 
+    '<img src=' + poster + 'alt="Movie Thumbnail" class="card-img-top" />' + 
+    '<div class="card-body">' + 
+    '<h3 class="card-title">' + title + '</h3>' + 
+    '<p class="card-text"> Released: ' + year + '</p>' + 
+    '<button type="button" class="btn btn-primary" onClick="showMovie(\'' + imdbID + '\')">View Info</a>' +
+    '</div></div>' 
+    return card;
+  }
+
+  // Displays additional info for selected films.
+  function createInfoCard(movieInfo) {
+    const {movieId, title, actors, awards, boxOffice, country, director, genre, released, runtime, plot} = movieInfo;
+    const card = '<div class="card-footer" id="movie-info">' + 
+    '<h3 class="card-text">' + title + '</h3>' + 
+    '<p class="card-text"> <b>Director:</b> ' + director + '</p>' + 
+    '<p class="card-text"> <b>Actors: </b> ' + actors + '</p>' + 
+    '<p class="card-text"> <b>Awards:</b> ' + awards + '</p>' + 
+    '<p class="card-text"> <b>Release Date:</b> ' + released + '</p>' + 
+    '<p class="card-text"> <b>Box Office:</b> ' + boxOffice + '</p>' +
+    '<p class="card-text"> <b>Country:</b> ' + country + '</p>' + 
+    '<p class="card-text"> <b>Genre:</b> ' + genre + '</p>' + 
+    '<p class="card-text">' + plot + '</p>' + 
+    '<p class="card-text"> <b>Runtime:</b> ' + runtime + '</p>' + 
+    '</div>'
+    return card;
+  }
+
+  // Creates additional info for selected films.
+  function showMovie(movieId) {
+    console.log(movieId);
+    const url = 'http://www.omdbapi.com/?apikey=b51fd28e&i=' + movieId;
+    fetch(url)
+    .then(function(response) {
+      return response.json();
+    })
+    .then(function(json) {
+      // Parse out the movie response.
+      console.log(json);
+      const title = json["Title"];
+      const actors = json["Actors"];
+      const awards = json["Awards"];
+      const boxOffice = json["BoxOffice"];
+      const country = json["Country"];
+      const director = json["Director"];
+      const genre = json["Genre"];
+      const released = json["Released"];
+      const runtime = json["Runtime"];
+      const plot = json["Plot"];
+      const movieInfo = {movieId, title, actors, awards, boxOffice, country, director, genre, released, runtime, plot};
+      const card = createInfoCard(movieInfo);
+      const movieNodeId = 'movie-' + movieId;
+      const node = document.getElementById( movieNodeId );
+      node.removeChild(node.lastChild);
+      node.insertAdjacentHTML( 'beforeend', card );
+    })
+    .catch(function(err) {
+      console.log(err);
+    });
+
+  }
+
+  // Displays movie info with parsed data.
   function insertMovies(movies) {
     const arr = movies.map(function(movie, index) {
       const title = movie["Title"];
       const year = movie["Year"];
       const imdbID = movie["imdbID"];
       const poster = movie["Poster"];
-      console.log(movie);
-      const node = '<div class="card" id="movie-' + imdbID + '"><div className="card-content">' + '<a target="_blank" href="https://www.imdb.com/title/' + imdbID + '">' + '<h2>' + title + '</h2>' + '<h3> Released: ' + year + '</h3>' + '<img src=' + poster + 'alt="Movie Thumbnail" class="img-responsive" />' + '</a>' + '</div></div>' 
+      const movieInfo = {title, year, imdbID, poster};
+      const node = createCard(movieInfo);
       return node;
     });
 
