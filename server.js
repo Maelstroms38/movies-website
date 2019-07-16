@@ -16,16 +16,21 @@ app.get('/favorites', function(req, res){
   res.send(data);
 });
 
-app.get('favorites', function(req, res){
-  if(!req.body.name || !req.body.oid){
+app.post('/favorites', function(req, res){
+  if(!req.body.imdbID){
     res.send("Error");
     return
   }
   var data = JSON.parse(fs.readFileSync('./data.json'));
   data.push(req.body);
-  fs.writeFile('./data.json', JSON.stringify(data));
-  res.setHeader('Content-Type', 'application/json');
-  res.send(data);
+  fs.writeFile('./data.json', JSON.stringify(data), function(err, result) {
+     if(err) {
+      res.send("Error:", err);
+      return
+     }
+     res.setHeader('Content-Type', 'application/json');
+     res.send(data);
+   });
 });
 
 app.listen(3000, function() {

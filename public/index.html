@@ -13,15 +13,22 @@
     <style> 
     html, body {
       font-family: "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif; 
-      background-color: #fff;
+      background-color: #161616;
       flex: 1;
     }
     .card {
       padding: 20px;
       align-items: center;
+      margin: auto;
     }
     .card-body {
       padding: 20px;
+    }
+    img {
+      display: block;
+      margin-left: auto;
+      margin-right: auto;
+      width: 100%;
     }
     </style>
     <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
@@ -33,10 +40,7 @@
   </head>
   <body onload="searchMovies()">
     <div class="container">
-      <h1>Movies App</h1>
-      <div class="col s12 m12 l9">
-         Discover your favorite movies.
-      </div>
+      <h1 class="card">Showtime Movies</h1>
       <!--
         This HTML file is a template.
         If you open it directly in the browser, you will see an empty page.
@@ -46,18 +50,55 @@
         To create a production bundle, use `npm run build` or `yarn build`.
       -->
       <nav class="navbar navbar-inverse">
-      <form class="form-inline" id="search-form" onsubmit="return searchMovies()">
-        <input class="form-control mr-sm-2" id="search-field" type="text" placeholder="Search Movies...">
-        <input type="submit" class="btn btn-info">
-      </form>
-      <br />
-      <div id="movies">
+        <div class="container-fluid">
+          <ul class="nav navbar-nav">
+            <li>
+            <form class="form-inline" id="search-form" onsubmit="return searchMovies()">
+              <input class="form-control mr-sm-2" id="search-field" type="text" placeholder="Search Movies...">
+              <input type="submit" value="Search" class="btn btn-primary" style="margin-right: 10px">
+              <button type="button" class="btn btn-info" onClick="showFavorites()">
+                Favorites
+              </button>
+            </form>
+            </li>
+          </ul>
+        </div>
+      </nav>
+      <div class="container-fluid" id="movies">
       </div>
     </div>
   </body>
+
   <footer>
   <script>
-    
+  
+  function showFavorites() {
+    fetch('/favorites')
+    .then(res => res.json())
+    .then(favorites => {
+      insertMovies(favorites);
+    })
+    .catch(error => console.error('Error:', error));
+  }
+
+  function favoriteMovie(params) {
+    const movie = params.split(",");
+    const data = {
+      'Title': movie[0], 
+      'Year': movie[1], 
+      'imdbID': movie[2], 
+      'Poster': movie[3]
+    };
+    fetch('/favorites', {
+        'method': 'POST', // *GET, POST, PUT, DELETE, etc.
+        'headers': {
+            'Content-Type': 'application/json',
+        },
+        'body': JSON.stringify(data) // body data type must match "Content-Type" header
+    }).then(res => res.json())
+    .then(response => console.log('Success:', JSON.stringify(response)))
+    .catch(error => console.error('Error:', error));
+  }
   // Queries OMDB Movies API and parses out response results.
   function searchMovies() {
     var text = document.getElementById("search-field").value;
@@ -89,12 +130,14 @@
   // Displays cards with movie summary information.
   function createCard(movie) {
     const {title, year, imdbID, poster} = movie;
+    const params = [title, year, imdbID, poster].join(",");
     const card = '<div class="card" style="width: 22rem;" id="movie-' + imdbID + '">' + 
     '<img src=' + poster + 'alt="Movie Thumbnail" class="card-img-top" />' + 
     '<div class="card-body">' + 
     '<h3 class="card-title">' + title + '</h3>' + 
     '<p class="card-text"> Released: ' + year + '</p>' + 
-    '<button type="button" class="btn btn-primary" onClick="showMovie(\'' + imdbID + '\')">View Info</a>' +
+    '<button type="button" class="btn btn-primary" onClick="showMovie(\'' + imdbID + '\')">View Info</button>' +
+    '<button type="button" class="btn btn-secondary" onClick="favoriteMovie(\'' + params + '\')">Favorite</button>' +
     '</div></div>' 
     return card;
   }
@@ -119,7 +162,6 @@
 
   // Creates additional info for selected films.
   function showMovie(movieId) {
-    console.log(movieId);
     const url = 'http://www.omdbapi.com/?apikey=b51fd28e&i=' + movieId;
     fetch(url)
     .then(function(response) {
@@ -127,7 +169,6 @@
     })
     .then(function(json) {
       // Parse out the movie response.
-      console.log(json);
       const title = json["Title"];
       const actors = json["Actors"];
       const awards = json["Awards"];
