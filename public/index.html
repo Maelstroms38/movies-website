@@ -106,7 +106,7 @@
       // Placeholder text in case no search query is submitted.
       text = "avengers"
     }
-    const url = 'http://www.omdbapi.com/?apikey=b51fd28e&s=' + text;
+    const url = 'https://www.omdbapi.com/?apikey=b51fd28e&s=' + text;
     fetch(url)
     .then(function(response) {
       return response.json();
@@ -162,7 +162,7 @@
 
   // Creates additional info for selected films.
   function showMovie(movieId) {
-    const url = 'http://www.omdbapi.com/?apikey=b51fd28e&i=' + movieId;
+    const url = 'https://www.omdbapi.com/?apikey=b51fd28e&i=' + movieId;
     fetch(url)
     .then(function(response) {
       return response.json();
